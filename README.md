@@ -12,7 +12,7 @@ The Airtable CRUD Flutter Plugin is a robust solution for integrating Airtable's
 - **Update Records**: Modify existing records effortlessly.
 - **Delete Records**: Remove records from your Airtable table.
 - **Pagination Support**: Fetch records with pagination options.
-- **View Selection**: Option to select views when fetching records, with a default set to `gridView`.
+- **View Selection**: Option to select views when fetching records, with a default set to `Grid View`.
 
 ## Getting Started
 
