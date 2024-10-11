@@ -3,9 +3,8 @@ import 'package:test/test.dart';
 import 'package:airtable_plugin/src/models/airtable_record.dart';
 
 void main() {
-  const apiKey =
-      'patG6xC7GCYE6p1Fu.64fd8a6a4a04b9299a347f0a7d54484b22a5a65f267bbcfc636ba491cc9e8125'; // Replace with your Airtable API key
-  const baseId = 'appMSZnmVizZgUkqp'; // Replace with your Airtable Base ID
+  const apiKey = 'Your apikey'; // Replace with your Airtable API key
+  const baseId = 'your base id'; // Replace with your Airtable Base ID
   const tableName = 'users'; // Replace with your Airtable table name
 
   late AirtableService airtableService;
