@@ -1,8 +1,8 @@
-/// Support for doing something awesome.
+/// Support for seamless integration with Airtable's API.
 ///
-/// More dartdocs go here.
-library;
+/// This library provides functionality for CRUD operations and
+/// record filtering on Airtable tables.
+library airtable_plugin;
 
 export 'src/airtable_plugin_base.dart';
-
-// TODO: Export any libraries intended for clients of this package.
+export 'src/models/airtable_record.dart'; // Exporting the model

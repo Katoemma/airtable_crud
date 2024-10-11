@@ -12,7 +12,7 @@ class AirtableService {
   final String _endpoint = 'https://api.airtable.com/v0';
 
   Future<List<AirtableRecord>> fetchRecords(String tableName,
-      {bool paginate = false, String view = 'gridView'}) async {
+      {bool paginate = false, String view = 'Grid View'}) async {
     List<AirtableRecord> allRecords = [];
     String? offset;
 
@@ -57,7 +57,7 @@ class AirtableService {
 
   Future<List<AirtableRecord>> fetchRecordsWithFilter(
       String tableName, String filterByFormula,
-      {bool paginate = false, String view = 'gridView'}) async {
+      {bool paginate = false, String view = 'Grid View'}) async {
     List<AirtableRecord> allRecords = [];
     String? offset;
 

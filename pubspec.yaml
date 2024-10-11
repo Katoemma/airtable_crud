@@ -1,5 +1,5 @@
 name: airtable_plugin
-description: A starting point for Dart libraries or applications.
+description: A Flutter plugin for seamless integration with Airtable's API, enabling CRUD operations and record filtering with ease.
 version: 1.0.0
 repository: https://github.com/Katoemma/airtable_plugin
 
