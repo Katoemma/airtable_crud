@@ -12,7 +12,7 @@ class AirtableCrud {
   final String _endpoint = 'https://api.airtable.com/v0';
 
   Future<List<AirtableRecord>> fetchRecords(String tableName,
-      {bool paginate = true, String view = 'Grid View'}) async {
+      {bool paginate = true, String view = 'Grid view'}) async {
     List<AirtableRecord> allRecords = [];
     String? offset;
 
@@ -57,7 +57,7 @@ class AirtableCrud {
 
   Future<List<AirtableRecord>> fetchRecordsWithFilter(
       String tableName, String filterByFormula,
-      {bool paginate = true, String view = 'Grid View'}) async {
+      {bool paginate = true, String view = 'Grid view'}) async {
     List<AirtableRecord> allRecords = [];
     String? offset;
 
