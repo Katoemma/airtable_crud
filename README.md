@@ -1,3 +1,9 @@
+Certainly! I've updated the README to include your avatar with a width of 50 pixels and made it rounded. Please note that while I've included the necessary HTML and CSS to make the image rounded, rendering styles in Markdown files may not be fully supported on all platforms, such as GitHub. However, the image will be resized to 50 pixels in width.
+
+Here's the updated README:
+
+---
+
 # Airtable CRUD Flutter Plugin
 
 [![Pub Version](https://img.shields.io/pub/v/airtable_plugin.svg)](https://pub.dev/packages/airtable_plugin)
@@ -47,12 +53,46 @@ dependencies:
    final records = await airtableCrud.fetchRecords('your_table_name', view: 'your_view_name');
    ```
 
+   **Explanation**:
+
+   - **Purpose**: Retrieves all records from a specified table in your Airtable base.
+   - **Parameters**:
+     - `your_table_name`: The name of the table you want to fetch records from.
+     - `view` (optional): The view within the table to fetch records from. Defaults to `'Grid view'`.
+   - **Usage**: Use this method when you need to retrieve all records, possibly with a specific view that may have filters or sorting applied.
+   - **Example**:
+     ```dart
+     final records = await airtableCrud.fetchRecords('Contacts', view: 'All Contacts');
+     ```
+
 4. **Fetch Records with Filter**:
 
    ```dart
    // Fetch records with a filter
-   final filteredRecords = await airtableCrud.fetchRecordsWithFilter('your_table_name', "AND({lastname} = 'User')", view: 'your_view_name');
+   final filteredRecords = await airtableCrud.fetchRecordsWithFilter(
+     'your_table_name',
+     "AND({lastname} = 'User')",
+     view: 'your_view_name',
+   );
    ```
+
+   **Explanation**:
+
+   - **Purpose**: Retrieves records from a table that match a specific filter criteria using Airtable's `filterByFormula`.
+   - **Parameters**:
+     - `your_table_name`: The name of the table to query.
+     - `filterByFormula`: An Airtable formula string that defines the filter criteria.
+     - `view` (optional): The view to fetch records from. Defaults to `'Grid view'`.
+   - **Usage**: Use this method to fetch records that meet certain conditions without retrieving the entire dataset.
+   - **Example**:
+     ```dart
+     final filteredRecords = await airtableCrud.fetchRecordsWithFilter(
+       'Contacts',
+       "AND({lastname} = 'Smith', {status} = 'Active')",
+       view: 'Active Contacts',
+     );
+     ```
+   - **Note**: The `filterByFormula` uses Airtable's formula syntax. You can combine conditions using `AND`, `OR`, and other functions.
 
 5. **Create a Record**:
 
@@ -61,6 +101,24 @@ dependencies:
    final createdRecord = await airtableCrud.createRecord('your_table_name', newRecord);
    ```
 
+   **Explanation**:
+
+   - **Purpose**: Adds a new record to the specified table in your Airtable base.
+   - **Parameters**:
+     - `your_table_name`: The name of the table where the new record will be added.
+     - `newRecord`: A `Map<String, dynamic>` containing field names and their corresponding values.
+   - **Usage**: Use this method to insert new data into your Airtable base.
+   - **Example**:
+     ```dart
+     final newRecord = {
+       'firstname': 'Jane',
+       'lastname': 'Doe',
+       'email': 'jane.doe@example.com',
+     };
+     final createdRecord = await airtableCrud.createRecord('Contacts', newRecord);
+     ```
+   - **Note**: Ensure that the field names in your map match the field names defined in your Airtable table.
+
 6. **Update a Record**:
 
    ```dart
@@ -68,11 +126,39 @@ dependencies:
    await airtableCrud.updateRecord('your_table_name', createdRecord);
    ```
 
+   **Explanation**:
+
+   - **Purpose**: Updates an existing record in the specified table.
+   - **Parameters**:
+     - `your_table_name`: The name of the table containing the record to update.
+     - `createdRecord`: An instance of `AirtableRecord` with updated field values.
+   - **Usage**: Use this method when you need to modify data of an existing record.
+   - **Example**:
+     ```dart
+     // Assume you have retrieved a record and stored it in 'recordToUpdate'
+     recordToUpdate.fields['email'] = 'new.email@example.com';
+     await airtableCrud.updateRecord('Contacts', recordToUpdate);
+     ```
+   - **Note**: You must include the record's ID in the `AirtableRecord` instance to identify which record to update.
+
 7. **Delete a Record**:
 
    ```dart
    await airtableCrud.deleteRecord('your_table_name', createdRecord.id!);
    ```
+
+   **Explanation**:
+
+   - **Purpose**: Deletes a record from the specified table in your Airtable base.
+   - **Parameters**:
+     - `your_table_name`: The name of the table containing the record to delete.
+     - `createdRecord.id!`: The unique ID of the record to delete.
+   - **Usage**: Use this method to remove records that are no longer needed.
+   - **Example**:
+     ```dart
+     await airtableCrud.deleteRecord('Contacts', 'rec1234567890ABC');
+     ```
+   - **Warning**: Deleting a record is irreversible. Ensure that you have the correct record ID before performing this operation.
 
 ## Error Handling
 
@@ -86,6 +172,32 @@ try {
   print('Details: ${e.details}');
 }
 ```
+
+**Explanation**:
+
+- **Purpose**: To catch and handle errors that may occur during Airtable operations.
+- **Usage**: Wrap your Airtable CRUD operations in a `try-catch` block to handle exceptions.
+- **Example**:
+  ```dart
+  try {
+    final newRecord = {'firstname': 'John'};
+    final createdRecord = await airtableCrud.createRecord('Contacts', newRecord);
+  } on AirtableException catch (e) {
+    print('Failed to create record: ${e.message}');
+    print('Error details: ${e.details}');
+  }
+  ```
+- **Note**: The `AirtableException` provides a `message` and `details` to help you understand what went wrong.
+
+## About the Author
+
+<p align="left">
+  <img src="https://katoemma.netlify.app/_nuxt/avatar.Q3ihwsGR.jpg" alt="kato emmanuel" width="50" height="50" style="border-radius: 50%;">
+</p>
+
+**kato emmanuel**
+
+I'm the creator of the Airtable CRUD Flutter Plugin. Visit my [portfolio](https://katoemma.netlify.app/) to learn more about my work and other projects.
 
 ## Buy Me a Coffee ☕
 
@@ -105,4 +217,3 @@ Contributions are welcome! If you have suggestions or improvements, please submi
 
 - This plugin leverages the Airtable API for data management.
 - Thank you for using the Airtable CRUD Flutter Plugin! If you find this package useful, please consider giving it a star on [pub.dev](https://pub.dev/packages/airtable_plugin).
-```
