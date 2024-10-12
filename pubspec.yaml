@@ -1,6 +1,6 @@
 name: airtable_plugin
 description: A Flutter plugin for seamless integration with Airtable's API, enabling CRUD operations and record filtering with ease.
-version: 1.0.1
+version: 1.0.2
 repository: https://github.com/Katoemma/airtable_plugin
 
 environment:

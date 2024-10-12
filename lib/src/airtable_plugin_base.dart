@@ -3,16 +3,16 @@ import 'package:airtable_plugin/src/errors/airtable_exception.dart';
 import 'package:http/http.dart' as http;
 import 'models/airtable_record.dart';
 
-class AirtableService {
+class AirtableCrud {
   final String apiKey;
   final String baseId;
 
-  AirtableService(this.apiKey, this.baseId);
+  AirtableCrud(this.apiKey, this.baseId);
 
   final String _endpoint = 'https://api.airtable.com/v0';
 
   Future<List<AirtableRecord>> fetchRecords(String tableName,
-      {bool paginate = false, String view = 'Grid View'}) async {
+      {bool paginate = true, String view = 'Grid View'}) async {
     List<AirtableRecord> allRecords = [];
     String? offset;
 
@@ -57,7 +57,7 @@ class AirtableService {
 
   Future<List<AirtableRecord>> fetchRecordsWithFilter(
       String tableName, String filterByFormula,
-      {bool paginate = false, String view = 'Grid View'}) async {
+      {bool paginate = true, String view = 'Grid View'}) async {
     List<AirtableRecord> allRecords = [];
     String? offset;
 
@@ -70,7 +70,6 @@ class AirtableService {
           'view': view, // Add view parameter
         },
       );
-      print(uri);
 
       final response = await http.get(
         uri,
@@ -103,9 +102,9 @@ class AirtableService {
   }
 
   Future<AirtableRecord> createRecord(
-      String tableName, AirtableRecord record) async {
+      String tableName, Map<String, dynamic> data) async {
     // Remove the 'id' field from the record before sending the request to create a new record
-    final recordWithoutId = {'fields': record.fields};
+    final recordWithoutId = {'fields': data};
 
     final response = await http.post(
       Uri.parse('$_endpoint/$baseId/$tableName'),

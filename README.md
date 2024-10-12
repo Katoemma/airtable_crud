@@ -30,48 +30,48 @@ dependencies:
 1. **Import the plugin**:
 
    ```dart
-   import 'package:airtable_plugin/airtable_service.dart';
+   import 'package:airtable_plugin/airtable_crud.dart';
    import 'models/airtable_record.dart';
    ```
 
-2. **Initialize the Airtable Service**:
+2. **Initialize the Airtable CRUD**:
 
    ```dart
-   final airtableService = AirtableService('YOUR_AIRTABLE_API_KEY', 'YOUR_BASE_ID');
+   final airtableCrud = AirtableCrud('YOUR_AIRTABLE_API_KEY', 'YOUR_BASE_ID');
    ```
 
 3. **Fetch Records**:
 
    ```dart
    // Fetch all records with optional pagination and view selection
-   final records = await airtableService.fetchRecords('your_table_name', paginate: false, view: 'your_view_name');
+   final records = await airtableCrud.fetchRecords('your_table_name', view: 'your_view_name');
    ```
 
 4. **Fetch Records with Filter**:
 
    ```dart
    // Fetch records with a filter
-   final filteredRecords = await airtableService.fetchRecordsWithFilter('your_table_name', "AND({lastname} = 'User')", paginate: false, view: 'your_view_name');
+   final filteredRecords = await airtableCrud.fetchRecordsWithFilter('your_table_name', "AND({lastname} = 'User')", view: 'your_view_name');
    ```
 
 5. **Create a Record**:
 
    ```dart
-   final newRecord = AirtableRecord(fields: {'firstname': 'John', 'lastname': 'Doe'});
-   final createdRecord = await airtableService.createRecord('your_table_name', newRecord);
+   final newRecord = {'firstname': 'John', 'lastname': 'Doe'};
+   final createdRecord = await airtableCrud.createRecord('your_table_name', newRecord);
    ```
 
 6. **Update a Record**:
 
    ```dart
    createdRecord.fields['lastname'] = 'Smith'; // Update the lastname field
-   await airtableService.updateRecord('your_table_name', createdRecord);
+   await airtableCrud.updateRecord('your_table_name', createdRecord);
    ```
 
 7. **Delete a Record**:
 
    ```dart
-   await airtableService.deleteRecord('your_table_name', createdRecord.id);
+   await airtableCrud.deleteRecord('your_table_name', createdRecord.id!);
    ```
 
 ## Error Handling
@@ -80,12 +80,18 @@ The plugin throws `AirtableException` for error cases, providing details about t
 
 ```dart
 try {
-  final records = await airtableService.fetchRecords('your_table_name');
+  final records = await airtableCrud.fetchRecords('your_table_name');
 } on AirtableException catch (e) {
   print('Error: ${e.message}');
   print('Details: ${e.details}');
 }
 ```
+
+## Buy Me a Coffee ☕
+
+If you find this plugin helpful and want to support further development, you can buy me a coffee! Your support is greatly appreciated. ☕💛
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/N4N314M0S8)
 
 ## License
 
@@ -99,3 +105,4 @@ Contributions are welcome! If you have suggestions or improvements, please submi
 
 - This plugin leverages the Airtable API for data management.
 - Thank you for using the Airtable CRUD Flutter Plugin! If you find this package useful, please consider giving it a star on [pub.dev](https://pub.dev/packages/airtable_plugin).
+```

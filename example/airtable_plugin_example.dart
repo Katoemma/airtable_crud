@@ -1,125 +1,152 @@
 import 'package:flutter/material.dart';
 import 'package:airtable_plugin/airtable_plugin.dart';
-import 'package:airtable_plugin/src/models/airtable_record.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const AirtableApp());
 }
 
-class MyApp extends StatelessWidget {
+class AirtableApp extends StatelessWidget {
+  const AirtableApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: AirtableExample(),
+      title: 'Airtable CRUD Example',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const RecordListScreen(),
     );
   }
 }
 
-class AirtableExample extends StatefulWidget {
+class RecordListScreen extends StatefulWidget {
+  const RecordListScreen({super.key});
+
   @override
-  _AirtableExampleState createState() => _AirtableExampleState();
+  State<RecordListScreen> createState() => _RecordListScreenState();
 }
 
-class _AirtableExampleState extends State<AirtableExample> {
-  final String apiKey = 'YOUR_API_KEY';
-  final String baseId = 'YOUR_BASE_ID';
-  final String tableName = 'users';
-
-  late AirtableService airtableService;
+class _RecordListScreenState extends State<RecordListScreen> {
+  final AirtableCrud airtableCrud =
+      AirtableCrud('YOUR_AIRTABLE_API_KEY', 'YOUR_BASE_ID');
   List<AirtableRecord> records = [];
+  bool isLoading = true;
+  String errorMessage = '';
 
   @override
   void initState() {
     super.initState();
-    airtableService = AirtableService(apiKey, baseId);
-    fetchRecords();
+    _fetchRecords();
   }
 
-  Future<void> fetchRecords() async {
+  Future<void> _fetchRecords() async {
     try {
-      final fetchedRecords = await airtableService.fetchRecords(tableName);
+      final fetchedRecords = await airtableCrud.fetchRecords('your_table_name');
       setState(() {
         records = fetchedRecords;
+        isLoading = false;
+        errorMessage = ''; // Clear any previous errors
+      });
+    } on AirtableException catch (e) {
+      setState(() {
+        isLoading = false;
+        errorMessage = 'Error fetching records: ${e.message} - ${e.details}';
       });
     } catch (e) {
-      print('Error fetching records: $e');
+      setState(() {
+        isLoading = false;
+        errorMessage = 'An unexpected error occurred: $e';
+      });
     }
   }
 
-  Future<void> createRecord() async {
-    final newRecord = AirtableRecord(
-      id: '', // Leave the ID empty for creation
-      fields: {
-        'firstname': 'John',
-        'lastname': 'Doe',
-        'username': 'johndoe',
-        'password': '1234abcd',
-      },
-    );
-
+  Future<void> _createRecord() async {
     try {
-      await airtableService.createRecord(tableName, newRecord);
-      fetchRecords(); // Refresh records after creating a new one
+      final newRecord =
+          AirtableRecord(fields: {'firstname': 'John', 'lastname': 'Doe'});
+      await airtableCrud.createRecord('your_table_name', newRecord.fields);
+      _fetchRecords(); // Refresh records after creation
+    } on AirtableException catch (e) {
+      setState(() {
+        errorMessage = 'Error creating record: ${e.message} - ${e.details}';
+      });
     } catch (e) {
-      print('Error creating record: $e');
+      setState(() {
+        errorMessage = 'An unexpected error occurred: $e';
+      });
     }
   }
 
-  Future<void> updateRecord(String recordId) async {
-    final updatedRecord = AirtableRecord(
-      id: recordId,
-      fields: {
-        'firstname': 'Updated Name',
-      },
-    );
-
+  Future<void> _updateRecord(AirtableRecord record) async {
     try {
-      await airtableService.updateRecord(tableName, updatedRecord);
-      fetchRecords(); // Refresh after updating
+      record.fields['lastname'] = 'Updated Doe';
+      await airtableCrud.updateRecord('your_table_name', record);
+      _fetchRecords(); // Refresh records after update
+    } on AirtableException catch (e) {
+      setState(() {
+        errorMessage = 'Error updating record: ${e.message} - ${e.details}';
+      });
     } catch (e) {
-      print('Error updating record: $e');
+      setState(() {
+        errorMessage = 'An unexpected error occurred: $e';
+      });
     }
   }
 
-  Future<void> deleteRecord(String recordId) async {
+  Future<void> _deleteRecord(String id) async {
     try {
-      await airtableService.deleteRecord(tableName, recordId);
-      fetchRecords(); // Refresh after deleting
+      await airtableCrud.deleteRecord('your_table_name', id);
+      _fetchRecords(); // Refresh records after deletion
+    } on AirtableException catch (e) {
+      setState(() {
+        errorMessage = 'Error deleting record: ${e.message} - ${e.details}';
+      });
     } catch (e) {
-      print('Error deleting record: $e');
+      setState(() {
+        errorMessage = 'An unexpected error occurred: $e';
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Airtable Example')),
-      body: ListView.builder(
-        itemCount: records.length,
-        itemBuilder: (context, index) {
-          final record = records[index];
-          return ListTile(
-            title: Text(record.fields['firstname'] ?? 'No Name'),
-            subtitle: Text(record.fields['lastname'] ?? ''),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.edit),
-                  onPressed: () => updateRecord(record.id),
-                ),
-                IconButton(
-                  icon: Icon(Icons.delete),
-                  onPressed: () => deleteRecord(record.id),
-                ),
-              ],
-            ),
-          );
-        },
+      appBar: AppBar(
+        title: Text('Airtable Records'),
       ),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : errorMessage.isNotEmpty
+              ? Center(
+                  child:
+                      Text(errorMessage, style: TextStyle(color: Colors.red)))
+              : ListView.builder(
+                  itemCount: records.length,
+                  itemBuilder: (context, index) {
+                    final record = records[index];
+                    return ListTile(
+                      title: Text(record.fields['firstname'] ?? 'Unknown'),
+                      subtitle: Text(record.fields['lastname'] ?? 'Unknown'),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.edit),
+                            onPressed: () => _updateRecord(record),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.delete),
+                            onPressed: () => _deleteRecord(record.id!),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
       floatingActionButton: FloatingActionButton(
+        onPressed: _createRecord,
         child: Icon(Icons.add),
-        onPressed: createRecord,
       ),
     );
   }
