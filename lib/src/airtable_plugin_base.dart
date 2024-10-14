@@ -136,7 +136,7 @@ class AirtableCrud {
   Future<AirtableRecord> createRecord(
       String tableName, Map<String, dynamic> data) async {
     // Remove the 'id' field from the record before sending the request to create a new record
-    final recordWithoutId = {'fields': data};
+    final recordWithoutId = {'fields': data, 'typecast': true};
 
     final response = await http.post(
       Uri.parse('$_endpoint/$baseId/$tableName'),
@@ -179,6 +179,7 @@ class AirtableCrud {
 
       final requestBody = {
         'records': batchData.map((data) => {'fields': data}).toList(),
+        'typecast': true,
       };
 
       final response = await http.post(
@@ -213,8 +214,11 @@ class AirtableCrud {
   ///
   /// Throws an [AirtableException] if the request fails.
   Future<void> updateRecord(String tableName, AirtableRecord record) async {
-    // Ensure the fields are nested within 'fields'
-    final Map<String, dynamic> body = {'fields': record.fields};
+    // Ensure the fields are nested within 'fields' and include 'typecast': true
+    final Map<String, dynamic> body = {
+      'fields': record.fields,
+      'typecast': true,
+    };
 
     final response = await http.patch(
       Uri.parse('$_endpoint/$baseId/$tableName/${record.id}'),
