@@ -1,9 +1,3 @@
-Certainly! I've updated the README to include your avatar with a width of 50 pixels and made it rounded. Please note that while I've included the necessary HTML and CSS to make the image rounded, rendering styles in Markdown files may not be fully supported on all platforms, such as GitHub. However, the image will be resized to 50 pixels in width.
-
-Here's the updated README:
-
----
-
 # Airtable CRUD Flutter Plugin
 
 [![Pub Version](https://img.shields.io/pub/v/airtable_plugin.svg)](https://pub.dev/packages/airtable_plugin)
@@ -15,6 +9,7 @@ The Airtable CRUD Flutter Plugin is a robust solution for integrating Airtable's
 - **Fetch Records**: Retrieve all records from a specified table.
 - **Fetch Records with Filter**: Use Airtable's `filterByFormula` to retrieve specific records based on criteria.
 - **Create Records**: Easily add new records to your Airtable table.
+- **Bulk Create Records**: Create multiple records efficiently in batches.
 - **Update Records**: Modify existing records effortlessly.
 - **Delete Records**: Remove records from your Airtable table.
 - **Pagination Support**: Fetch records with pagination options.
@@ -31,13 +26,15 @@ dependencies:
   airtable_plugin: ^1.0.0  # Replace with the latest version from pub.dev
 ```
 
+Then run `flutter pub get` to install the package.
+
 ### Usage
 
 1. **Import the plugin**:
 
    ```dart
    import 'package:airtable_plugin/airtable_crud.dart';
-   import 'models/airtable_record.dart';
+   import 'package:airtable_plugin/models/airtable_record.dart';
    ```
 
 2. **Initialize the Airtable CRUD**:
@@ -61,6 +58,7 @@ dependencies:
      - `view` (optional): The view within the table to fetch records from. Defaults to `'Grid view'`.
    - **Usage**: Use this method when you need to retrieve all records, possibly with a specific view that may have filters or sorting applied.
    - **Example**:
+
      ```dart
      final records = await airtableCrud.fetchRecords('Contacts', view: 'All Contacts');
      ```
@@ -78,13 +76,14 @@ dependencies:
 
    **Explanation**:
 
-   - **Purpose**: Retrieves records from a table that match a specific filter criteria using Airtable's `filterByFormula`.
+   - **Purpose**: Retrieves records from a table that match specific criteria using Airtable's `filterByFormula`.
    - **Parameters**:
      - `your_table_name`: The name of the table to query.
      - `filterByFormula`: An Airtable formula string that defines the filter criteria.
      - `view` (optional): The view to fetch records from. Defaults to `'Grid view'`.
    - **Usage**: Use this method to fetch records that meet certain conditions without retrieving the entire dataset.
    - **Example**:
+
      ```dart
      final filteredRecords = await airtableCrud.fetchRecordsWithFilter(
        'Contacts',
@@ -92,6 +91,7 @@ dependencies:
        view: 'Active Contacts',
      );
      ```
+
    - **Note**: The `filterByFormula` uses Airtable's formula syntax. You can combine conditions using `AND`, `OR`, and other functions.
 
 5. **Create a Record**:
@@ -109,6 +109,7 @@ dependencies:
      - `newRecord`: A `Map<String, dynamic>` containing field names and their corresponding values.
    - **Usage**: Use this method to insert new data into your Airtable base.
    - **Example**:
+
      ```dart
      final newRecord = {
        'firstname': 'Jane',
@@ -117,9 +118,54 @@ dependencies:
      };
      final createdRecord = await airtableCrud.createRecord('Contacts', newRecord);
      ```
+
    - **Note**: Ensure that the field names in your map match the field names defined in your Airtable table.
 
-6. **Update a Record**:
+6. **Bulk Create Records**:
+
+   ```dart
+   // Prepare a list of records to be created
+   List<Map<String, dynamic>> dataList = [
+     {'firstname': 'Alice', 'lastname': 'Smith'},
+     {'firstname': 'Bob', 'lastname': 'Johnson'},
+     // Add more records as needed
+   ];
+
+   // Create multiple records in bulk
+   final createdRecords = await airtableCrud.bulkCreateRecords('your_table_name', dataList);
+   ```
+
+   **Explanation**:
+
+   - **Purpose**: Adds multiple new records to the specified table efficiently by batching the requests.
+   - **Parameters**:
+     - `your_table_name`: The name of the table where the new records will be added.
+     - `dataList`: A `List<Map<String, dynamic>>` containing multiple records to create.
+   - **Usage**: Use this method to insert multiple records at once, which is more efficient than creating them individually.
+   - **Example**:
+
+     ```dart
+     final dataList = [
+       {
+         'firstname': 'Charlie',
+         'lastname': 'Brown',
+         'email': 'charlie.brown@example.com',
+       },
+       {
+         'firstname': 'Diana',
+         'lastname': 'Prince',
+         'email': 'diana.prince@example.com',
+       },
+       // Add more records as needed
+     ];
+     final createdRecords = await airtableCrud.bulkCreateRecords('Contacts', dataList);
+     ```
+
+   - **Note**:
+     - The method automatically handles batching, respecting Airtable's limit of 10 records per request.
+     - Ensure that the field names in your maps match the field names defined in your Airtable table.
+
+7. **Update a Record**:
 
    ```dart
    createdRecord.fields['lastname'] = 'Smith'; // Update the lastname field
@@ -134,17 +180,19 @@ dependencies:
      - `createdRecord`: An instance of `AirtableRecord` with updated field values.
    - **Usage**: Use this method when you need to modify data of an existing record.
    - **Example**:
+
      ```dart
      // Assume you have retrieved a record and stored it in 'recordToUpdate'
      recordToUpdate.fields['email'] = 'new.email@example.com';
      await airtableCrud.updateRecord('Contacts', recordToUpdate);
      ```
+
    - **Note**: You must include the record's ID in the `AirtableRecord` instance to identify which record to update.
 
-7. **Delete a Record**:
+8. **Delete a Record**:
 
    ```dart
-   await airtableCrud.deleteRecord('your_table_name', createdRecord.id!);
+   await airtableCrud.deleteRecord('your_table_name', createdRecord.id);
    ```
 
    **Explanation**:
@@ -152,12 +200,14 @@ dependencies:
    - **Purpose**: Deletes a record from the specified table in your Airtable base.
    - **Parameters**:
      - `your_table_name`: The name of the table containing the record to delete.
-     - `createdRecord.id!`: The unique ID of the record to delete.
+     - `createdRecord.id`: The unique ID of the record to delete.
    - **Usage**: Use this method to remove records that are no longer needed.
    - **Example**:
+
      ```dart
      await airtableCrud.deleteRecord('Contacts', 'rec1234567890ABC');
      ```
+
    - **Warning**: Deleting a record is irreversible. Ensure that you have the correct record ID before performing this operation.
 
 ## Error Handling
@@ -178,6 +228,7 @@ try {
 - **Purpose**: To catch and handle errors that may occur during Airtable operations.
 - **Usage**: Wrap your Airtable CRUD operations in a `try-catch` block to handle exceptions.
 - **Example**:
+
   ```dart
   try {
     final newRecord = {'firstname': 'John'};
@@ -187,6 +238,7 @@ try {
     print('Error details: ${e.details}');
   }
   ```
+
 - **Note**: The `AirtableException` provides a `message` and `details` to help you understand what went wrong.
 
 ## About the Author
@@ -195,7 +247,7 @@ try {
   <img src="https://katoemma.netlify.app/_nuxt/avatar.Q3ihwsGR.jpg" alt="kato emmanuel" width="50" height="50" style="border-radius: 50%;">
 </p>
 
-**kato emmanuel**
+**Kato Emmanuel**
 
 I'm the creator of the Airtable CRUD Flutter Plugin. Visit my [portfolio](https://katoemma.netlify.app/) to learn more about my work and other projects.
 

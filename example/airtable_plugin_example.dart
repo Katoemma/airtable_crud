@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:airtable_plugin/airtable_plugin.dart';
+import 'package:airtable_crud/airtable_crud.dart';
+import 'package:airtable_crud/models/airtable_record.dart';
 
 void main() {
-  runApp(const AirtableApp());
+  runApp(AirtableExampleApp());
 }
 
-class AirtableApp extends StatelessWidget {
-  const AirtableApp({super.key});
-
+class AirtableExampleApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -15,137 +14,191 @@ class AirtableApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const RecordListScreen(),
+      home: AirtableHomePage(),
     );
   }
 }
 
-class RecordListScreen extends StatefulWidget {
-  const RecordListScreen({super.key});
-
+class AirtableHomePage extends StatefulWidget {
   @override
-  State<RecordListScreen> createState() => _RecordListScreenState();
+  _AirtableHomePageState createState() => _AirtableHomePageState();
 }
 
-class _RecordListScreenState extends State<RecordListScreen> {
-  final AirtableCrud airtableCrud =
-      AirtableCrud('YOUR_AIRTABLE_API_KEY', 'YOUR_BASE_ID');
+class _AirtableHomePageState extends State<AirtableHomePage> {
+  final String apiKey =
+      'YOUR_AIRTABLE_API_KEY'; // Replace with your Airtable API key
+  final String baseId = 'YOUR_BASE_ID'; // Replace with your Airtable Base ID
+  final String tableName =
+      'YOUR_TABLE_NAME'; // Replace with your Airtable table name
+
+  late AirtableCrud airtableCrud;
   List<AirtableRecord> records = [];
   bool isLoading = true;
-  String errorMessage = '';
 
   @override
   void initState() {
     super.initState();
-    _fetchRecords();
+    airtableCrud = AirtableCrud(apiKey, baseId);
+    fetchRecords();
   }
 
-  Future<void> _fetchRecords() async {
+  Future<void> fetchRecords() async {
+    setState(() {
+      isLoading = true;
+    });
+
     try {
-      final fetchedRecords = await airtableCrud.fetchRecords('your_table_name');
+      List<AirtableRecord> fetchedRecords =
+          await airtableCrud.fetchRecords(tableName);
       setState(() {
         records = fetchedRecords;
         isLoading = false;
-        errorMessage = ''; // Clear any previous errors
       });
-    } on AirtableException catch (e) {
+    } catch (e) {
+      print('Error fetching records: $e');
       setState(() {
         isLoading = false;
-        errorMessage = 'Error fetching records: ${e.message} - ${e.details}';
-      });
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-        errorMessage = 'An unexpected error occurred: $e';
       });
     }
   }
 
-  Future<void> _createRecord() async {
+  Future<void> createRecord() async {
+    final newRecord = {
+      'firstname': 'New',
+      'lastname': 'User',
+      'email': 'new.user@example.com',
+    };
+
     try {
-      final newRecord =
-          AirtableRecord(fields: {'firstname': 'John', 'lastname': 'Doe'});
-      await airtableCrud.createRecord('your_table_name', newRecord.fields);
-      _fetchRecords(); // Refresh records after creation
-    } on AirtableException catch (e) {
-      setState(() {
-        errorMessage = 'Error creating record: ${e.message} - ${e.details}';
-      });
+      await airtableCrud.createRecord(tableName, newRecord);
+      await fetchRecords();
     } catch (e) {
-      setState(() {
-        errorMessage = 'An unexpected error occurred: $e';
-      });
+      print('Error creating record: $e');
     }
   }
 
-  Future<void> _updateRecord(AirtableRecord record) async {
+  Future<void> bulkCreateRecords() async {
+    final dataList = [
+      {
+        'firstname': 'Bulk',
+        'lastname': 'User1',
+        'email': 'bulk.user1@example.com',
+      },
+      {
+        'firstname': 'Bulk',
+        'lastname': 'User2',
+        'email': 'bulk.user2@example.com',
+      },
+      // Add more records as needed
+    ];
+
     try {
-      record.fields['lastname'] = 'Updated Doe';
-      await airtableCrud.updateRecord('your_table_name', record);
-      _fetchRecords(); // Refresh records after update
-    } on AirtableException catch (e) {
-      setState(() {
-        errorMessage = 'Error updating record: ${e.message} - ${e.details}';
-      });
+      await airtableCrud.bulkCreateRecords(tableName, dataList);
+      await fetchRecords();
     } catch (e) {
-      setState(() {
-        errorMessage = 'An unexpected error occurred: $e';
-      });
+      print('Error bulk creating records: $e');
     }
   }
 
-  Future<void> _deleteRecord(String id) async {
+  Future<void> updateRecord(AirtableRecord record) async {
+    // Modify the record's fields
+    record.fields['lastname'] = 'Updated';
+
     try {
-      await airtableCrud.deleteRecord('your_table_name', id);
-      _fetchRecords(); // Refresh records after deletion
-    } on AirtableException catch (e) {
-      setState(() {
-        errorMessage = 'Error deleting record: ${e.message} - ${e.details}';
-      });
+      await airtableCrud.updateRecord(tableName, record);
+      await fetchRecords();
     } catch (e) {
-      setState(() {
-        errorMessage = 'An unexpected error occurred: $e';
-      });
+      print('Error updating record: $e');
     }
+  }
+
+  Future<void> deleteRecord(String id) async {
+    try {
+      await airtableCrud.deleteRecord(tableName, id);
+      await fetchRecords();
+    } catch (e) {
+      print('Error deleting record: $e');
+    }
+  }
+
+  Widget buildRecordList() {
+    return ListView.builder(
+      itemCount: records.length,
+      itemBuilder: (context, index) {
+        AirtableRecord record = records[index];
+        return ListTile(
+          title: Text(record.fields['firstname'] ?? 'No Name'),
+          subtitle: Text(record.fields['email'] ?? ''),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: Icon(Icons.edit),
+                onPressed: () => updateRecord(record),
+              ),
+              IconButton(
+                icon: Icon(Icons.delete),
+                onPressed: () => deleteRecord(record.id),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget buildLoading() {
+    return Center(child: CircularProgressIndicator());
+  }
+
+  Widget buildContent() {
+    if (isLoading) {
+      return buildLoading();
+    } else {
+      return buildRecordList();
+    }
+  }
+
+  void showActionsDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Select Action'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    createRecord();
+                  },
+                  child: Text('Create Single Record'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    bulkCreateRecords();
+                  },
+                  child: Text('Bulk Create Records'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Airtable Records'),
+        title: Text('Airtable CRUD Example'),
       ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : errorMessage.isNotEmpty
-              ? Center(
-                  child:
-                      Text(errorMessage, style: TextStyle(color: Colors.red)))
-              : ListView.builder(
-                  itemCount: records.length,
-                  itemBuilder: (context, index) {
-                    final record = records[index];
-                    return ListTile(
-                      title: Text(record.fields['firstname'] ?? 'Unknown'),
-                      subtitle: Text(record.fields['lastname'] ?? 'Unknown'),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.edit),
-                            onPressed: () => _updateRecord(record),
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.delete),
-                            onPressed: () => _deleteRecord(record.id!),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+      body: buildContent(),
       floatingActionButton: FloatingActionButton(
-        onPressed: _createRecord,
+        onPressed: () => showActionsDialog(),
         child: Icon(Icons.add),
       ),
     );

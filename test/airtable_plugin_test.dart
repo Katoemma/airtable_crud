@@ -1,10 +1,10 @@
-import 'package:airtable_plugin/airtable_plugin.dart';
+import 'package:airtable_crud/airtable_plugin.dart';
 import 'package:test/test.dart';
-import 'package:airtable_plugin/src/models/airtable_record.dart';
 
 void main() {
-  const apiKey = 'Your apikey'; // Replace with your Airtable API key
-  const baseId = 'your base id'; // Replace with your Airtable Base ID
+  const apiKey =
+      'patG6xC7GCYE6p1Fu.551d6a1bfbaa8d09533e7e5dd72c79bf985b3df7b6b6a8b84db3c626850aef68'; // Replace with your Airtable API key
+  const baseId = 'appMSZnmVizZgUkqp'; // Replace with your Airtable Base ID
   const tableName = 'users'; // Replace with your Airtable table name
 
   late AirtableCrud airtableService;
@@ -113,9 +113,9 @@ void main() {
         'AirtableService updateRecord should update an existing record successfully',
         () async {
       final record = AirtableRecord(
-        id: 'recs2coL10mDFyuhQ', // Replace with an existing Airtable record ID
+        id: 'recHcnO7AzQ7w8OGN', // Replace with an existing Airtable record ID
         fields: {
-          'firstname': 'Updateddated',
+          'firstname': 'Updated',
           'lastname': 'User',
         },
       );
@@ -125,7 +125,7 @@ void main() {
       // Verify by fetching the record and checking the updated fields
       final updatedRecords = await airtableService.fetchRecords(tableName);
       final updatedRecord =
-          updatedRecords.firstWhere((r) => r.id == 'recs2coL10mDFyuhQ');
+          updatedRecords.firstWhere((r) => r.id == 'recHcnO7AzQ7w8OGN');
 
       expect(updatedRecord.fields['firstname'], 'Updated');
     });
@@ -159,6 +159,35 @@ void main() {
           remainingRecords.any((r) => r.id == recordToDelete.id);
 
       expect(recordExists, isFalse);
+    });
+
+    test('bulkCreateRecords should create multiple records successfully',
+        () async {
+      final dataList = [
+        {
+          'firstname': 'Bulk',
+          'lastname': 'User1',
+          'password': 'password1',
+          'username': 'bulkuser1'
+        },
+        {
+          'firstname': 'Bulk',
+          'lastname': 'User2',
+          'password': 'password2',
+          'username': 'bulkuser2'
+        },
+        // Add more records as needed
+      ];
+
+      final createdRecords =
+          await airtableService.createBulkRecords(tableName, dataList);
+
+      expect(createdRecords.length, dataList.length);
+
+      for (int i = 0; i < createdRecords.length; i++) {
+        expect(createdRecords[i].fields['firstname'], 'Bulk');
+        expect(createdRecords[i].fields['lastname'], dataList[i]['lastname']);
+      }
     });
   });
 }
