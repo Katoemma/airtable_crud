@@ -23,7 +23,7 @@ Add the following dependency to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  airtable_plugin: ^1.0.0  # Replace with the latest version from pub.dev
+  airtable_crud: ^1.0.0  # Replace with the latest version from pub.dev
 ```
 
 Then run `flutter pub get` to install the package.

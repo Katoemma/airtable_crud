@@ -1,6 +1,6 @@
 name: airtable_crud
 description: A Flutter plugin for seamless integration with Airtable's API, enabling CRUD operations and record filtering with ease.
-version: 1.0.5
+version: 1.0.6
 repository: https://github.com/Katoemma/airtable_plugin
 
 environment:
