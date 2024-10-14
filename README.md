@@ -1,6 +1,6 @@
 # Airtable CRUD Flutter Plugin
 
-[![Pub Version](https://img.shields.io/pub/v/airtable_plugin.svg)](https://pub.dev/packages/airtable_plugin)
+[![Pub Version](https://img.shields.io/pub/v/airtable_crud.svg)](https://pub.dev/packages/airtable_crud)
 
 The Airtable CRUD Flutter Plugin is a robust solution for integrating Airtable's API with your Flutter applications. It enables developers to perform essential CRUD operations and filter records seamlessly.
 
@@ -132,7 +132,7 @@ Then run `flutter pub get` to install the package.
    ];
 
    // Create multiple records in bulk
-   final createdRecords = await airtableCrud.bulkCreateRecords('your_table_name', dataList);
+   final createdRecords = await airtableCrud.createBulkRecords('your_table_name', dataList);
    ```
 
    **Explanation**:
@@ -158,7 +158,7 @@ Then run `flutter pub get` to install the package.
        },
        // Add more records as needed
      ];
-     final createdRecords = await airtableCrud.bulkCreateRecords('Contacts', dataList);
+     final createdRecords = await airtableCrud.createBulkRecords('Contacts', dataList);
      ```
 
    - **Note**:
@@ -268,4 +268,4 @@ Contributions are welcome! If you have suggestions or improvements, please submi
 ## Acknowledgments
 
 - This plugin leverages the Airtable API for data management.
-- Thank you for using the Airtable CRUD Flutter Plugin! If you find this package useful, please consider giving it a star on [pub.dev](https://pub.dev/packages/airtable_plugin).
+- Thank you for using the Airtable CRUD Flutter Plugin! If you find this package useful, please consider giving it a star on [pub.dev](https://pub.dev/packages/airtable_crud).
