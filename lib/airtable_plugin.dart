@@ -7,3 +7,4 @@ library airtable_plugin;
 export 'src/airtable_plugin_base.dart';
 export 'src/models/airtable_record.dart';
 export 'src/errors/airtable_exception.dart';
+export 'src/query_builder.dart';

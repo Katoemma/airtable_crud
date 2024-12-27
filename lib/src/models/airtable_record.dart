@@ -7,7 +7,7 @@ class AirtableRecord {
   String id;
 
   /// A map of field names to their corresponding values.
-  Map<dynamic, dynamic> fields;
+  Map<String, dynamic> fields;
 
   /// Creates an instance of [AirtableRecord] with the given [id] and [fields].
   AirtableRecord({required this.id, required this.fields});
@@ -17,10 +17,10 @@ class AirtableRecord {
   /// - [json]: A map representing the JSON object returned from the Airtable API.
   ///
   /// Returns an instance of [AirtableRecord].
-  factory AirtableRecord.fromJson(Map<dynamic, dynamic> json) {
+  factory AirtableRecord.fromJson(Map<String, dynamic> json) {
     return AirtableRecord(
-      id: json['id'],
-      fields: (json['fields'] as Map<dynamic, dynamic>? ?? {}),
+      id: json['id'] as String,
+      fields: Map<String, dynamic>.from(json['fields'] ?? {}),
     );
   }
 

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:airtable_crud/src/errors/airtable_exception.dart';
+import 'package:airtable_crud/src/query_builder.dart';
 import 'package:http/http.dart' as http;
 import 'models/airtable_record.dart';
 
@@ -117,6 +118,7 @@ class AirtableCrud {
           details: errorBody['error']?['message'],
         );
       }
+      print('API Response: $response');
 
       if (!paginate) {
         break;
@@ -124,6 +126,26 @@ class AirtableCrud {
     } while (offset != null);
 
     return allRecords;
+  }
+
+  /// Fetches records using the query builder.
+  ///
+  /// - [queryBuilder]: An instance of [AirtableQueryBuilder] for dynamic filtering.
+  /// - [paginate]: If true (default), fetches all pages of records.
+  /// - [view]: The view in Airtable from which to fetch records (default is 'Grid view').
+  ///
+  /// Returns a [Future] that resolves to a list of [AirtableRecord].
+  ///
+  /// Throws an [AirtableException] if the request fails.
+  Future<List<AirtableRecord>> fetchRecordsWithQueryBuilder(
+      String tableName, AirtableQueryCrud queryBuilder,
+      {bool paginate = true, String view = 'Grid view'}) {
+    return fetchRecordsWithFilter(
+      tableName,
+      queryBuilder.build(),
+      paginate: paginate,
+      view: view,
+    );
   }
 
   /// Creates a new record in the specified [tableName].
@@ -135,7 +157,6 @@ class AirtableCrud {
   /// Throws an [AirtableException] if the request fails.
   Future<AirtableRecord> createRecord(
       String tableName, Map<String, dynamic> data) async {
-    // Remove the 'id' field from the record before sending the request to create a new record
     final recordWithoutId = {'fields': data, 'typecast': true};
 
     final response = await http.post(
@@ -150,7 +171,6 @@ class AirtableCrud {
     if (response.statusCode == 200 || response.statusCode == 201) {
       return AirtableRecord.fromJson(jsonDecode(response.body));
     } else {
-      // Extract error details
       final errorBody = jsonDecode(response.body);
       throw AirtableException(
         message: 'Failed to create record',
