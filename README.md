@@ -366,7 +366,7 @@ try {
 ## About the Author
 
 <p align="left">
-  <img src="https://i.imgur.com/waQsJVd.jpg" alt="Profile Photo" style="width:90px; height:90px; object-fit:cover;border-radius:50%">
+  <img src="https://i.imgur.com/HKJPtDU.jpg" alt="Profile Photo" style="object-fit:cover;border-radius:50%">
 </p>
 
 **Kato Emmanuel**
