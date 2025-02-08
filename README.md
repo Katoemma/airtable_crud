@@ -1,4 +1,4 @@
-# Airtable CRUD Flutter Plugin
+# Airtable CRUD Flutter Package
 
 [![Pub Version](https://img.shields.io/pub/v/airtable_crud.svg)](https://pub.dev/packages/airtable_crud)
 
