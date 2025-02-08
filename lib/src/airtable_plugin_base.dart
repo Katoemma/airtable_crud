@@ -24,22 +24,30 @@ class AirtableCrud {
   ///
   /// - [paginate]: If true (default), fetches all pages of records.
   /// - [view]: The view in Airtable from which to fetch records (default is 'Grid view').
+  /// - [fields]: A list of field names to include in the response.
   ///
   /// Returns a [Future] that resolves to a list of [AirtableRecord].
   ///
   /// Throws an [AirtableException] if the request fails.
-  Future<List<AirtableRecord>> fetchRecords(String tableName,
-      {bool paginate = true, String view = 'Grid view'}) async {
+  Future<List<AirtableRecord>> fetchRecords(
+    String tableName, {
+    bool paginate = true,
+    String view = 'Grid view',
+    List<String> fields = const [],
+  }) async {
     List<AirtableRecord> allRecords = [];
     String? offset;
 
     do {
-      var uri = Uri.parse('$_endpoint/$baseId/$tableName').replace(
-        queryParameters: {
-          if (offset != null) 'offset': offset,
-          'view': view, // Add view parameter
-        },
-      );
+      List<String> queryParts = ['view=${Uri.encodeComponent(view)}'];
+      if (offset != null) queryParts.add('offset=$offset');
+      if (fields.isNotEmpty) {
+        queryParts.addAll(
+            fields.map((field) => 'fields[]=${Uri.encodeComponent(field)}'));
+      }
+
+      String queryString = queryParts.join('&');
+      Uri uri = Uri.parse('$_endpoint/$baseId/$tableName?$queryString');
 
       final response = await http.get(
         uri,
@@ -56,7 +64,6 @@ class AirtableCrud {
             .toList());
         offset = jsonData['offset'];
       } else {
-        // Get detailed error information from the response body
         final errorBody = jsonDecode(response.body);
         throw AirtableException(
           message: 'Failed to fetch records',
@@ -64,9 +71,7 @@ class AirtableCrud {
         );
       }
 
-      if (!paginate) {
-        break;
-      }
+      if (!paginate) break;
     } while (offset != null);
 
     return allRecords;
@@ -77,25 +82,32 @@ class AirtableCrud {
   /// - [filterByFormula]: An Airtable formula to filter records.
   /// - [paginate]: If true (default), fetches all pages of records.
   /// - [view]: The view in Airtable from which to fetch records (default is 'Grid view').
+  /// - [fields]: A list of field names to include in the response.
   ///
   /// Returns a [Future] that resolves to a list of [AirtableRecord].
   ///
   /// Throws an [AirtableException] if the request fails.
   Future<List<AirtableRecord>> fetchRecordsWithFilter(
-      String tableName, String filterByFormula,
-      {bool paginate = true, String view = 'Grid view'}) async {
+    String tableName,
+    String filterByFormula, {
+    bool paginate = true,
+    String view = 'Grid view',
+    List<String> fields = const [],
+  }) async {
     List<AirtableRecord> allRecords = [];
     String? offset;
 
     do {
-      var uri = Uri.parse('$_endpoint/$baseId/$tableName').replace(
-        queryParameters: {
-          if (offset != null) 'offset': offset,
-          'filterByFormula':
-              filterByFormula, // No need for explicit encoding here
-          'view': view, // Add view parameter
-        },
-      );
+      List<String> queryParts = ['view=${Uri.encodeComponent(view)}'];
+      queryParts.add('filterByFormula=${Uri.encodeComponent(filterByFormula)}');
+      if (offset != null) queryParts.add('offset=$offset');
+      if (fields.isNotEmpty) {
+        queryParts.addAll(
+            fields.map((field) => 'fields[]=${Uri.encodeComponent(field)}'));
+      }
+
+      String queryString = queryParts.join('&');
+      Uri uri = Uri.parse('$_endpoint/$baseId/$tableName?$queryString');
 
       final response = await http.get(
         uri,
@@ -118,11 +130,8 @@ class AirtableCrud {
           details: errorBody['error']?['message'],
         );
       }
-      print('API Response: $response');
 
-      if (!paginate) {
-        break;
-      }
+      if (!paginate) break;
     } while (offset != null);
 
     return allRecords;

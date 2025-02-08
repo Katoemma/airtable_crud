@@ -14,6 +14,7 @@ The Airtable CRUD Flutter Plugin is a robust solution for integrating Airtable's
 - **Delete Records**: Remove records from your Airtable table.
 - **Pagination Support**: Fetch records with pagination options.
 - **View Selection**: Option to select views when fetching records, with a default set to `Grid View`.
+- **Fetch Fields**:Option to select fields to be included in the response when fetching records. 
 
 ## Getting Started
 
@@ -23,7 +24,7 @@ Add the following dependency to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  airtable_crud: ^1.0.0  # Replace with the latest version from pub.dev
+  airtable_crud: latest
 ```
 
 Then run `flutter pub get` to install the package.
@@ -46,7 +47,7 @@ Then run `flutter pub get` to install the package.
 
    ```dart
    // Fetch all records with optional pagination and view selection
-   final records = await airtableCrud.fetchRecords('your_table_name', view: 'your_view_name');
+   final records = await airtableCrud.fetchRecords('your_table_name', view: 'your_view_name',fields:['field_1','field_2','field 3']);
    ```
 
    **Explanation**:
@@ -55,11 +56,12 @@ Then run `flutter pub get` to install the package.
    - **Parameters**:
      - `your_table_name`: The name of the table you want to fetch records from.
      - `view` (optional): The view within the table to fetch records from. Defaults to `'Grid view'`.
-   - **Usage**: Use this method when you need to retrieve all records, possibly with a specific view that may have filters or sorting applied.
+     - `fields`(optional): The fields within the table to be included in the response.
+   - **Usage**: Use this method when you need to retrieve all records, possibly with a specific view that may have filters or sorting applied and if you want to fetch only specific fields.
    - **Example**:
 
      ```dart
-     final records = await airtableCrud.fetchRecords('Contacts', view: 'All Contacts');
+     final records = await airtableCrud.fetchRecords('Contacts', view: 'All Contacts',field:['firstName','lastName', 'Phone', 'Email']);
      ```
 
 4. **Fetch Records with Filter**:
@@ -80,6 +82,7 @@ Then run `flutter pub get` to install the package.
      - `your_table_name`: The name of the table to query.
      - `filterByFormula`: An Airtable formula string that defines the filter criteria.
      - `view` (optional): The view to fetch records from. Defaults to `'Grid view'`.
+     - `fields`(optional): The fields within the table to be included in the response.
    - **Usage**: Use this method to fetch records that meet certain conditions without retrieving the entire dataset.
    - **Example**:
 
@@ -88,6 +91,7 @@ Then run `flutter pub get` to install the package.
        'Contacts',
        "AND({lastname} = 'Smith', {status} = 'Active')",
        view: 'Active Contacts',
+       fields:['firstName','Email','Contact']
      );
      ```
 
