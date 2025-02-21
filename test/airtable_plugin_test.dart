@@ -3,171 +3,132 @@ import 'package:test/test.dart';
 
 void main() {
   const apiKey =
-      'patqvri6S9L4ep6ST.45263e0976debe3ad555b606809906fe584eda05f66921cda8524658206d8ca0';
-  const baseId = 'appFkCaX7WZiYANVy';
+      'patRXr2irq0ggr5rj.92a977c7f035f867a09e1d73fbfa5a66a7da864632571a7da43c46d2a6e12464';
+  const baseId = 'app4eSThceLDNKHWT';
   const tableName = 'crudTest';
 
   late AirtableCrud airtableCrud;
-  late AirtableQueryCrud queryBuilder;
 
+  // Setup that runs before all tests
   setUp(() {
     airtableCrud = AirtableCrud(apiKey, baseId);
-    queryBuilder = AirtableQueryCrud();
   });
 
-  group('AirtableQueryCrud with Airtable API', () {
-    test('fetchRecordsWithQueryBuilder should return filtered records',
-        () async {
-      // Build a query to filter records with a specific firstname and lastname
-      queryBuilder.where({'firstname': 'Test'}).and({'lastname': 'User'});
+  group('AirtableCrud Tests', () {
+    test('Create Record', () async {
+      final testData = {
+        'Name': 'Test Record',
+        'Status': 'Active',
+        'Date': DateTime.now().toIso8601String(),
+      };
 
-      // Print the generated formula
-      final formula = queryBuilder.build();
-      print('Generated Formula: $formula');
-
-      // Fetch records using the query
       try {
-        final records = await airtableCrud.fetchRecordsWithQueryBuilder(
-          tableName,
-          queryBuilder,
-        );
-
-        // Print fetched records
-        for (final record in records) {
-          print('Fetched Record: ${record.fields}');
-        }
-
-        // Validate the results
-        expect(records.isNotEmpty, isTrue);
-        for (final record in records) {
-          expect(record.fields['firstname'], 'Test');
-        }
+        final createdRecord =
+            await airtableCrud.createRecord(tableName, testData);
+        expect(createdRecord.id, isNotEmpty);
+        expect(createdRecord.fields['Name'], equals('Test Record'));
+        expect(createdRecord.fields['Status'], equals('Active'));
       } catch (e) {
-        print('Error fetching records: $e');
-        rethrow;
+        fail('Create record failed: $e');
       }
     });
 
-    test('fetchRecordsWithQueryBuilder with OR condition', () async {
-      // Build a query with an OR condition
-      queryBuilder.where({'firstname': 'Bulk'}).or({'lastname': 'User1'});
-
-      // Print the generated formula
-      final formula = queryBuilder.build();
-      print('Generated Formula: $formula');
-
-      // Fetch records using the query
+    test('Fetch Records', () async {
       try {
-        final records = await airtableCrud.fetchRecordsWithQueryBuilder(
-          tableName,
-          queryBuilder,
-        );
-
-        // Print fetched records
-        for (final record in records) {
-          print('Fetched Record: ${record.fields}');
-        }
-
-        // Validate the results
-        expect(records.isNotEmpty, isTrue);
-        for (final record in records) {
-          expect(
-            record.fields['firstname'] == 'Bulk' ||
-                record.fields['lastname'] == 'User1',
-            isTrue,
-          );
-        }
+        final records = await airtableCrud.fetchRecords(tableName);
+        expect(records, isList);
+        expect(records.isNotEmpty, true);
+        expect(records.first.id, isNotEmpty);
       } catch (e) {
-        print('Error fetching records: $e');
-        rethrow;
+        fail('Fetch records failed: $e');
       }
     });
 
-    test('fetchRecordsWithQueryBuilder with complex conditions', () async {
-      // Build a complex query
-      queryBuilder.where({'firstname': 'Bulk'}).and({'lastname': 'User2'}).or(
-          {'username': 'testuser'});
-
-      // Print the generated formula
-      final formula = queryBuilder.build();
-      print('Generated Formula: $formula');
-
-      // Fetch records using the query
+    test('Fetch Records with Filter', () async {
       try {
-        final records = await airtableCrud.fetchRecordsWithQueryBuilder(
+        final records = await airtableCrud.fetchRecordsWithFilter(
           tableName,
-          queryBuilder,
+          '{Name} = "Test Record"',
         );
-
-        // Print fetched records
-        for (final record in records) {
-          print('Fetched Record: ${record.fields}');
-        }
-
-        // Validate the results
-        expect(records.isNotEmpty, isTrue);
-        for (final record in records) {
-          final isBulkUser2 = record.fields['firstname'] == 'Bulk' &&
-              record.fields['lastname'] == 'User2';
-          final isTestUser = record.fields['username'] == 'testuser';
-
-          expect(isBulkUser2 || isTestUser, isTrue);
-        }
+        expect(records, isList);
+        expect(records.isNotEmpty, true);
+        expect(records.first.fields['Name'], equals('Test Record'));
       } catch (e) {
-        print('Error fetching records: $e');
-        rethrow;
+        fail('Fetch records with filter failed: $e');
       }
     });
 
-    test('and() should combine conditions with AND', () {
-      queryBuilder.where({'firstname': 'Test'}).and({'lastname': 'User'});
+    test('Create Bulk Records', () async {
+      final testDataList = [
+        {
+          'Name': 'Bulk Test 1',
+          'Status': 'Pending',
+        },
+        {
+          'Name': 'Bulk Test 2',
+          'Status': 'Completed',
+        },
+      ];
 
-      final formula = queryBuilder.build();
-      expect(formula, "AND({firstname} = 'Test', {lastname} = 'User')");
-    });
-
-    test('or() should combine conditions with OR', () {
-      queryBuilder.where({'firstname': 'Bulk'}).or({'lastname': 'User1'});
-
-      final formula = queryBuilder.build();
-      expect(formula, "OR({firstname} = 'Bulk', {lastname} = 'User1')");
-    });
-
-    test('and() and or() should nest conditions correctly', () {
-      queryBuilder.where({'firstname': 'Bulk'}).and({'lastname': 'User2'}).or(
-          {'username': 'testuser'});
-
-      final formula = queryBuilder.build();
-      expect(formula,
-          "OR(AND({firstname} = 'Bulk', {lastname} = 'User2'), {username} = 'testuser')");
-    });
-
-    test('fetch all records without filters', () async {
-      // Build a broad query without specific filters
-      queryBuilder.where({'firstname': 'Bulk'});
-
-      // Print the generated formula
-      final formula = queryBuilder.build();
-      print('Generated Formula: $formula');
-
-      // Fetch records using the query
       try {
-        final records = await airtableCrud.fetchRecordsWithQueryBuilder(
-          tableName,
-          queryBuilder,
-        );
-
-        // Print fetched records
-        for (final record in records) {
-          print('Fetched Record: ${record.fields}');
-        }
-
-        // Validate the results
-        expect(records.isNotEmpty, isTrue);
+        final createdRecords =
+            await airtableCrud.createBulkRecords(tableName, testDataList);
+        expect(createdRecords.length, equals(2));
+        expect(createdRecords[0].fields['Name'], equals('Bulk Test 1'));
+        expect(createdRecords[1].fields['Name'], equals('Bulk Test 2'));
       } catch (e) {
-        print('Error fetching records: $e');
-        rethrow;
+        fail('Bulk create failed: $e');
       }
+    });
+
+    test('Update Record', () async {
+      // First create a record to update
+      final initialData = {'Name': 'Update Test', 'Status': 'Initial'};
+      final createdRecord =
+          await airtableCrud.createRecord(tableName, initialData);
+
+      try {
+        createdRecord.fields['Status'] = 'Updated';
+        await airtableCrud.updateRecord(tableName, createdRecord);
+
+        // Fetch the updated record to verify
+        final updatedRecords = await airtableCrud.fetchRecordsWithFilter(
+          tableName,
+          '{Name} = "Update Test"',
+        );
+        expect(updatedRecords.first.fields['Status'], equals('Updated'));
+      } catch (e) {
+        fail('Update record failed: $e');
+      }
+    });
+
+    test('Delete Record', () async {
+      // First create a record to delete
+      final testData = {'Name': 'Delete Test', 'Status': 'To Delete'};
+      final createdRecord =
+          await airtableCrud.createRecord(tableName, testData);
+
+      try {
+        await airtableCrud.deleteRecord(tableName, createdRecord.id);
+
+        // Try to fetch the deleted record
+        final records = await airtableCrud.fetchRecordsWithFilter(
+          tableName,
+          '{Name} = "Delete Test"',
+        );
+        expect(records.isEmpty, true);
+      } catch (e) {
+        fail('Delete record failed: $e');
+      }
+    });
+
+    test('Error Handling - Invalid API Key', () async {
+      final badAirtableCrud = AirtableCrud('invalid_key', baseId);
+
+      expect(
+        () async => await badAirtableCrud.fetchRecords(tableName),
+        throwsA(isA<AirtableException>()),
+      );
     });
   });
 }

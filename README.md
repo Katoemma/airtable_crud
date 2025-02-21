@@ -2,7 +2,7 @@
 
 [![Pub Version](https://img.shields.io/pub/v/airtable_crud.svg)](https://pub.dev/packages/airtable_crud)
 
-The Airtable CRUD Flutter Plugin is a robust solution for integrating Airtable's API with your Flutter applications. It enables developers to perform essential CRUD operations and filter records seamlessly.
+The Airtable CRUD Flutter Package is a robust solution for integrating Airtable's API with your Flutter applications. It enables developers to perform essential CRUD operations and filter records seamlessly.
 
 ## Features
 
@@ -245,128 +245,6 @@ try {
 - **Note**: The `AirtableException` provides a `message` and `details` to help you understand what went wrong.
 
 
-## Update: New Functionality - Query Builder
-
-### **Fetch Records with Query Builder**
-
-The **AirtableQueryBuilder** allows you to dynamically construct complex `filterByFormula` queries programmatically without manually writing Airtable formulas.
-
-#### **Example Usage**
-
-```dart
-import 'package:airtable_plugin/airtable_crud.dart';
-
-// Initialize Airtable CRUD
-final airtableCrud = AirtableCrud('YOUR_AIRTABLE_API_KEY', 'YOUR_BASE_ID');
-
-// Build the filter formula dynamically
-final queryBuilder = AirtableQueryBuilder()
-    .where({'Status': 'Pending'})         // WHERE Status = 'Pending'
-    .and({'Priority': 'High'})            // AND Priority = 'High'
-    .or({'Assignee': 'John Doe'})         // OR Assignee = 'John Doe'
-    .and({'Category': 'Development'})     // AND Category = 'Development'
-    .or({'DueDate': '2024-01-01'});       // OR DueDate = '2024-01-01'
-
-// Fetch records using the query builder
-final records = await airtableCrud.fetchRecordsWithQueryBuilder(
-  'Tasks',
-  queryBuilder,
-  view: 'Grid view',
-);
-
-// Print the records
-for (var record in records) {
-  print('Record ID: ${record.id}, Fields: ${record.fields}');
-}
-```
-
----
-
-#### **Explanation**
-
-1. **Dynamic Query Building**:
-   - Build complex queries programmatically using methods like `where`, `and`, and `or`.
-   - Automatically generates valid Airtable formulas based on conditions provided.
-
-2. **Generated Query Formula**:
-   The example above generates the following query formula:
-   ```plaintext
-   AND(
-     {Status} = 'Pending',
-     AND({Priority} = 'High'),
-     OR(
-       {Assignee} = 'John Doe',
-       AND({Category} = 'Development'),
-       OR({DueDate} = '2024-01-01')
-     )
-   )
-   ```
-
-3. **Advantages**:
-   - Avoids manual construction of error-prone formulas.
-   - Flexible for dynamic conditions (e.g., user inputs or variable filters).
-
----
-
-#### **AirtableQueryBuilder Reference**
-
-1. **`where(Map<String, String> conditions)`**:
-   - Adds a base condition with `AND` logic.
-   - Example:
-     ```dart
-     queryBuilder.where({'Status': 'Active'});
-     ```
-
-2. **`and(Map<String, String> conditions)`**:
-   - Adds a condition joined explicitly with `AND`.
-   - Example:
-     ```dart
-     queryBuilder.and({'Priority': 'High'});
-     ```
-
-3. **`or(Map<String, String> conditions)`**:
-   - Adds a condition joined explicitly with `OR`.
-   - Example:
-     ```dart
-     queryBuilder.or({'Assignee': 'Jane Doe'});
-     ```
-
-4. **`build()`**:
-   - Generates the final Airtable formula as a string.
-   - Example:
-     ```dart
-     final formula = queryBuilder.build();
-     print(formula);
-     ```
-
-5. **`reset()`**:
-   - Clears all conditions to reuse the query builder.
-   - Example:
-     ```dart
-     queryBuilder.reset();
-     ```
-
----
-
-#### **Error Handling**
-
-The query builder works seamlessly with `fetchRecordsWithQueryBuilder`. If an invalid formula or unexpected condition occurs, handle errors as follows:
-
-```dart
-try {
-  final queryBuilder = AirtableQueryBuilder()
-      .where({'InvalidField': 'Value'}); // Invalid condition
-
-  final records = await airtableCrud.fetchRecordsWithQueryBuilder(
-    'Tasks',
-    queryBuilder,
-  );
-} on AirtableException catch (e) {
-  print('Failed to fetch records: ${e.message}');
-  print('Error details: ${e.details}');
-}
-```
-
 ## About the Author
 
 <p align="left">
@@ -377,11 +255,6 @@ try {
 
 I'm the creator of the Airtable CRUD Flutter Plugin. Visit my [portfolio](https://katoemma.netlify.app/) to learn more about my work and other projects.
 
-## Buy Me a Coffee ☕
-
-If you find this plugin helpful and want to support further development, you can buy me a coffee! Your support is greatly appreciated. ☕💛
-
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/N4N314M0S8)
 
 ## License
 

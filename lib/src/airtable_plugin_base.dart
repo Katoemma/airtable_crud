@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:airtable_crud/src/errors/airtable_exception.dart';
-import 'package:airtable_crud/src/query_builder.dart';
 import 'package:http/http.dart' as http;
 import 'models/airtable_record.dart';
 
@@ -135,26 +134,6 @@ class AirtableCrud {
     } while (offset != null);
 
     return allRecords;
-  }
-
-  /// Fetches records using the query builder.
-  ///
-  /// - [queryBuilder]: An instance of [AirtableQueryBuilder] for dynamic filtering.
-  /// - [paginate]: If true (default), fetches all pages of records.
-  /// - [view]: The view in Airtable from which to fetch records (default is 'Grid view').
-  ///
-  /// Returns a [Future] that resolves to a list of [AirtableRecord].
-  ///
-  /// Throws an [AirtableException] if the request fails.
-  Future<List<AirtableRecord>> fetchRecordsWithQueryBuilder(
-      String tableName, AirtableQueryCrud queryBuilder,
-      {bool paginate = true, String view = 'Grid view'}) {
-    return fetchRecordsWithFilter(
-      tableName,
-      queryBuilder.build(),
-      paginate: paginate,
-      view: view,
-    );
   }
 
   /// Creates a new record in the specified [tableName].
