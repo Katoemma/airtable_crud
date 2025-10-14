@@ -76,7 +76,7 @@ class _AirtableHomePageState extends State<AirtableHomePage> {
     }
   }
 
-  Future<void> bulkCreateRecords() async {
+  Future<void> createBulkRecords() async {
     final dataList = [
       {
         'firstname': 'Bulk',
