@@ -34,7 +34,7 @@ Then run `flutter pub get` to install the package.
 1. **Import the plugin**:
 
    ```dart
-   import 'package:airtable_plugin/airtable_crud.dart';
+   import 'package:airtable_crud/airtable_plugin.dart';
    ```
 
 2. **Initialize the Airtable CRUD**:

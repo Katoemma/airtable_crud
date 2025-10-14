@@ -1,6 +1,5 @@
+import 'package:airtable_crud/airtable_plugin.dart';
 import 'package:flutter/material.dart';
-import 'package:airtable_crud/airtable_crud.dart';
-import 'package:airtable_crud/models/airtable_record.dart';
 
 void main() {
   runApp(AirtableExampleApp());
@@ -77,7 +76,7 @@ class _AirtableHomePageState extends State<AirtableHomePage> {
     }
   }
 
-  Future<void> bulkCreateRecords() async {
+  Future<void> createBulkRecords() async {
     final dataList = [
       {
         'firstname': 'Bulk',
@@ -93,7 +92,7 @@ class _AirtableHomePageState extends State<AirtableHomePage> {
     ];
 
     try {
-      await airtableCrud.bulkCreateRecords(tableName, dataList);
+      await airtableCrud.createBulkRecords(tableName, dataList);
       await fetchRecords();
     } catch (e) {
       print('Error bulk creating records: $e');
