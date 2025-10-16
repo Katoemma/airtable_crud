@@ -1,0 +1,21 @@
+# GitHub Actions workflow for publishing to pub.dev
+# This workflow is triggered when a version tag is pushed (e.g., v1.3.0)
+name: Publish to pub.dev
+
+on:
+  push:
+    tags:
+      # Must align with the tag-pattern configured on pub.dev
+      # Pattern: v{{version}} (e.g., v1.3.0, v1.4.0, v2.0.0)
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+# Publish using the reusable workflow from dart-lang
+jobs:
+  publish:
+    permissions:
+      id-token: write # Required for authentication using OIDC
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
+    # Uncomment if your package is in a subdirectory:
+    # with:
+    #   working-directory: path/to/package
+

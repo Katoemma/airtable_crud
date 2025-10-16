@@ -4,17 +4,29 @@
 
 The Airtable CRUD Flutter Package is a robust solution for integrating Airtable's API with your Flutter applications. It enables developers to perform essential CRUD operations and filter records seamlessly.
 
+## ✨ What's New in v1.3.0
+
+- 🎯 **Unified API**: Single `fetchRecords()` method for all fetch operations
+- 🛡️ **Better Error Handling**: Specific exception types (Auth, Network, RateLimit, etc.)
+- ⚙️ **Advanced Configuration**: Configurable timeouts, retries, and logging
+- 🔄 **Immutable Updates**: New `copyWith()` and `updateField()` methods
+- 📦 **New Bulk Operations**: Bulk update and delete support
+- 🏗️ **Improved Architecture**: Better organized, more testable code
+- 📝 **Enhanced Return Values**: Operations now return more useful information
+- ✅ **100% Backward Compatible**: All existing code still works!
+
+[See full changelog](CHANGELOG.md) | [Migration guide](MIGRATION.md)
+
 ## Features
 
-- **Fetch Records**: Retrieve all records from a specified table.
-- **Fetch Records with Filter**: Use Airtable's `filterByFormula` to retrieve specific records based on criteria.
-- **Create Records**: Easily add new records to your Airtable table.
-- **Bulk Create Records**: Create multiple records efficiently in batches.
-- **Update Records**: Modify existing records effortlessly.
-- **Delete Records**: Remove records from your Airtable table.
-- **Pagination Support**: Fetch records with pagination options.
-- **View Selection**: Option to select views when fetching records, with a default set to `Grid View`.
-- **Fetch Fields**:Option to select fields to be included in the response when fetching records. 
+- **Fetch Records**: Retrieve all records with optional filtering, field selection, and pagination
+- **Create Records**: Add single or multiple records efficiently in batches
+- **Update Records**: Modify existing records with immutable patterns or bulk operations
+- **Delete Records**: Remove single or multiple records with detailed results
+- **Advanced Error Handling**: Catch specific error types for better error recovery
+- **Retry Logic**: Automatic retry with exponential backoff
+- **Configuration**: Customize timeouts, retries, logging, and more
+- **Type Safety**: Immutable models and type-safe field access 
 
 ## Getting Started
 
@@ -31,191 +43,232 @@ Then run `flutter pub get` to install the package.
 
 ### Usage
 
-1. **Import the plugin**:
+#### 1. **Import the package**
 
-   ```dart
-   import 'package:airtable_crud/airtable_plugin.dart';
-   ```
+```dart
+// ✅ New import (v1.3.0+)
+import 'package:airtable_crud/airtable_crud.dart';
 
-2. **Initialize the Airtable CRUD**:
+// ⚠️ Old import (deprecated, will be removed in v2.0.0)
+// import 'package:airtable_crud/airtable_plugin.dart';
+```
 
-   ```dart
-   final airtableCrud = AirtableCrud('YOUR_AIRTABLE_API_KEY', 'YOUR_BASE_ID');
-   ```
+---
 
-3. **Fetch Records**:
+#### 2. **Initialize Airtable CRUD**
 
-   ```dart
-   // Fetch all records with optional pagination and view selection
-   final records = await airtableCrud.fetchRecords('your_table_name', view: 'your_view_name',fields:['field_1','field_2','field 3']);
-   ```
+```dart
+// ✅ Recommended: Advanced configuration
+final config = AirtableConfig(
+  apiKey: 'YOUR_API_KEY',
+  baseId: 'YOUR_BASE_ID',
+  timeout: Duration(seconds: 60),    // Custom timeout
+  maxRetries: 5,                     // Retry failed requests
+  enableLogging: true,               // Debug logging
+  defaultView: 'Main View',          // Default view for fetches
+);
+final crud = AirtableCrud.withConfig(config);
 
-   **Explanation**:
+// Simple initialization (still works)
+final crud = AirtableCrud('YOUR_API_KEY', 'YOUR_BASE_ID');
+```
 
-   - **Purpose**: Retrieves all records from a specified table in your Airtable base.
-   - **Parameters**:
-     - `your_table_name`: The name of the table you want to fetch records from.
-     - `view` (optional): The view within the table to fetch records from. Defaults to `'Grid view'`.
-     - `fields`(optional): The fields within the table to be included in the response.
-   - **Usage**: Use this method when you need to retrieve all records, possibly with a specific view that may have filters or sorting applied and if you want to fetch only specific fields.
-   - **Example**:
+---
 
-     ```dart
-     final records = await airtableCrud.fetchRecords('Contacts', view: 'All Contacts',field:['firstName','lastName', 'Phone', 'Email']);
-     ```
+#### 3. **Fetch Records** (Unified Method)
 
-4. **Fetch Records with Filter**:
+```dart
+// ✅ Fetch all records
+final allRecords = await crud.fetchRecords('Users');
 
-   ```dart
-   // Fetch records with a filter
-   final filteredRecords = await airtableCrud.fetchRecordsWithFilter(
-     'your_table_name',
-     "AND({lastname} = 'User')",
-     view: 'your_view_name',
-   );
-   ```
+// ✅ Fetch with filter
+final activeUsers = await crud.fetchRecords(
+  'Users',
+  filter: "{Status} = 'Active'",
+);
 
-   **Explanation**:
+// ✅ Fetch specific fields only
+final names = await crud.fetchRecords(
+  'Users',
+  fields: ['Name', 'Email'],
+);
 
-   - **Purpose**: Retrieves records from a table that match specific criteria using Airtable's `filterByFormula`.
-   - **Parameters**:
-     - `your_table_name`: The name of the table to query.
-     - `filterByFormula`: An Airtable formula string that defines the filter criteria.
-     - `view` (optional): The view to fetch records from. Defaults to `'Grid view'`.
-     - `fields`(optional): The fields within the table to be included in the response.
-   - **Usage**: Use this method to fetch records that meet certain conditions without retrieving the entire dataset.
-   - **Example**:
+// ✅ Combine multiple options
+final results = await crud.fetchRecords(
+  'Users',
+  filter: "AND({Status} = 'Active', {Age} > 18)",
+  fields: ['Name', 'Email', 'Phone'],
+  view: 'Active Users',
+  maxRecords: 100,
+);
 
-     ```dart
-     final filteredRecords = await airtableCrud.fetchRecordsWithFilter(
-       'Contacts',
-       "AND({lastname} = 'Smith', {status} = 'Active')",
-       view: 'Active Contacts',
-       fields:['firstName','Email','Contact']
-     );
-     ```
+// ⚠️ Old way (deprecated but still works)
+// final filtered = await crud.fetchRecordsWithFilter('Users', "{Status} = 'Active'");
+```
 
-   - **Note**: The `filterByFormula` uses Airtable's formula syntax. You can combine conditions using `AND`, `OR`, and other functions.
+---
 
-5. **Create a Record**:
+#### 4. **Create Records**
 
-   ```dart
-   final newRecord = {'firstname': 'John', 'lastname': 'Doe'};
-   final createdRecord = await airtableCrud.createRecord('your_table_name', newRecord);
-   ```
+```dart
+// Create a single record
+final newUser = {
+  'Name': 'John Doe',
+  'Email': 'john@example.com',
+  'Status': 'Active',
+};
+final created = await crud.createRecord('Users', newUser);
+print('Created record with ID: ${created.id}');
 
-   **Explanation**:
+// Access created record fields
+print('Name: ${created.fields['Name']}');
+```
 
-   - **Purpose**: Adds a new record to the specified table in your Airtable base.
-   - **Parameters**:
-     - `your_table_name`: The name of the table where the new record will be added.
-     - `newRecord`: A `Map<String, dynamic>` containing field names and their corresponding values.
-   - **Usage**: Use this method to insert new data into your Airtable base.
-   - **Example**:
+---
 
-     ```dart
-     final newRecord = {
-       'firstname': 'Jane',
-       'lastname': 'Doe',
-       'email': 'jane.doe@example.com',
-     };
-     final createdRecord = await airtableCrud.createRecord('Contacts', newRecord);
-     ```
+#### 5. **Bulk Create Records**
 
-   - **Note**: Ensure that the field names in your map match the field names defined in your Airtable table.
+```dart
+// Create multiple records efficiently
+final users = [
+  {'Name': 'Alice Smith', 'Email': 'alice@example.com'},
+  {'Name': 'Bob Johnson', 'Email': 'bob@example.com'},
+  {'Name': 'Carol White', 'Email': 'carol@example.com'},
+];
 
-6. **Bulk Create Records**:
+final createdRecords = await crud.createBulkRecords('Users', users);
+print('Created ${createdRecords.length} records');
 
-   ```dart
-   // Prepare a list of records to be created
-   List<Map<String, dynamic>> dataList = [
-     {'firstname': 'Alice', 'lastname': 'Smith'},
-     {'firstname': 'Bob', 'lastname': 'Johnson'},
-     // Add more records as needed
-   ];
+// Automatically handles batching (10 records per request)
+```
 
-   // Create multiple records in bulk
-   final createdRecords = await airtableCrud.createBulkRecords('your_table_name', dataList);
-   ```
+---
 
-   **Explanation**:
+#### 6. **Update Records** (Immutable Pattern ✨ New in v1.3.0)
 
-   - **Purpose**: Adds multiple new records to the specified table efficiently by batching the requests.
-   - **Parameters**:
-     - `your_table_name`: The name of the table where the new records will be added.
-     - `dataList`: A `List<Map<String, dynamic>>` containing multiple records to create.
-   - **Usage**: Use this method to insert multiple records at once, which is more efficient than creating them individually.
-   - **Example**:
+```dart
+// ✅ Recommended: Immutable update with copyWith
+final user = await crud.fetchRecords('Users', filter: "{Email} = 'john@example.com'");
+final record = user.first;
 
-     ```dart
-     final dataList = [
-       {
-         'firstname': 'Charlie',
-         'lastname': 'Brown',
-         'email': 'charlie.brown@example.com',
-       },
-       {
-         'firstname': 'Diana',
-         'lastname': 'Prince',
-         'email': 'diana.prince@example.com',
-       },
-       // Add more records as needed
-     ];
-     final createdRecords = await airtableCrud.createBulkRecords('Contacts', dataList);
-     ```
+// Create updated version without mutating original
+final updated = record.copyWith(
+  fields: {...record.fields, 'Status': 'Inactive'},
+);
+final result = await crud.updateRecord('Users', updated);
+print('Updated: ${result.fields['Status']}'); // Returns the updated record!
 
-   - **Note**:
-     - The method automatically handles batching, respecting Airtable's limit of 10 records per request.
-     - Ensure that the field names in your maps match the field names defined in your Airtable table.
+// ✅ Convenience helper for single field
+final updated2 = record.updateField('Status', 'Active');
+await crud.updateRecord('Users', updated2);
 
-7. **Update a Record**:
+// ⚠️ Old way (deprecated but still works)
+// record.fields['Status'] = 'Inactive';
+// await crud.updateRecord('Users', record);
+```
 
-   ```dart
-   createdRecord.fields['lastname'] = 'Smith'; // Update the lastname field
-   await airtableCrud.updateRecord('your_table_name', createdRecord);
-   ```
+---
 
-   **Explanation**:
+#### 7. **Bulk Update Records** (✨ New in v1.3.0)
 
-   - **Purpose**: Updates an existing record in the specified table.
-   - **Parameters**:
-     - `your_table_name`: The name of the table containing the record to update.
-     - `createdRecord`: An instance of `AirtableRecord` with updated field values.
-   - **Usage**: Use this method when you need to modify data of an existing record.
-   - **Example**:
+```dart
+// Update multiple records at once
+final records = await crud.fetchRecords('Users', filter: "{Status} = 'Pending'");
 
-     ```dart
-     // Assume you have retrieved a record and stored it in 'recordToUpdate'
-     recordToUpdate.fields['email'] = 'new.email@example.com';
-     await airtableCrud.updateRecord('Contacts', recordToUpdate);
-     ```
+final updatedRecords = records
+    .map((r) => r.updateField('Status', 'Processed'))
+    .toList();
 
-   - **Note**: You must include the record's ID in the `AirtableRecord` instance to identify which record to update.
+final results = await crud.updateBulkRecords('Users', updatedRecords);
+print('Updated ${results.length} records');
+```
 
-8. **Delete a Record**:
+---
 
-   ```dart
-   await airtableCrud.deleteRecord('your_table_name', createdRecord.id);
-   ```
+#### 8. **Delete Records** (Enhanced Return Value ✨ New in v1.3.0)
 
-   **Explanation**:
+```dart
+// Delete a single record - now returns metadata!
+final result = await crud.deleteRecord('Users', 'rec123abc');
+print('Deleted: ${result.id}');
+print('Deleted at: ${result.deletedAt}');
+print('Success: ${result.deleted}');
+```
 
-   - **Purpose**: Deletes a record from the specified table in your Airtable base.
-   - **Parameters**:
-     - `your_table_name`: The name of the table containing the record to delete.
-     - `createdRecord.id`: The unique ID of the record to delete.
-   - **Usage**: Use this method to remove records that are no longer needed.
-   - **Example**:
+---
 
-     ```dart
-     await airtableCrud.deleteRecord('Contacts', 'rec1234567890ABC');
-     ```
+#### 9. **Bulk Delete Records** (✨ New in v1.3.0)
 
-   - **Warning**: Deleting a record is irreversible. Ensure that you have the correct record ID before performing this operation.
+```dart
+// Delete multiple records
+final recordsToDelete = ['rec123', 'rec456', 'rec789'];
+final results = await crud.deleteBulkRecords('Users', recordsToDelete);
+
+for (final result in results) {
+  print('Deleted ${result.id} at ${result.deletedAt}');
+}
+```
+
+---
+
+#### 10. **Type-Safe Field Access** (✨ New in v1.3.0)
+
+```dart
+final record = await crud.fetchRecords('Users').then((r) => r.first);
+
+// Type-safe field access
+final name = record.getField<String>('Name');        // Returns String?
+final age = record.getField<int>('Age');             // Returns int?
+final active = record.getField<bool>('IsActive');    // Returns bool?
+
+// Check if field exists
+if (record.hasField('Email')) {
+  print('Email: ${record.fields['Email']}');
+}
+
+// Remove a field (returns new record)
+final withoutEmail = record.removeField('Email');
+```
+
+---
 
 ## Error Handling
 
-The plugin throws `AirtableException` for error cases, providing details about the error message. Handle exceptions gracefully in your application.
+### v1.3.0+ Recommended Approach
+
+The package provides specific exception types for different error scenarios, allowing for more granular error handling:
+
+```dart
+try {
+  final records = await airtableCrud.fetchRecords('Users');
+} on AuthException catch (e) {
+  // Handle authentication/authorization errors (401/403)
+  print('Auth error: ${e.message}');
+  print('Check your API key or permissions');
+} on RateLimitException catch (e) {
+  // Handle rate limiting (429)
+  print('Rate limited. Retry after: ${e.retryAfter}');
+  await Future.delayed(e.retryAfter ?? Duration(seconds: 5));
+  // Retry the operation
+} on ValidationException catch (e) {
+  // Handle validation errors (422)
+  print('Invalid data: ${e.message}');
+  print('Details: ${e.details}');
+} on NotFoundException catch (e) {
+  // Handle not found errors (404)
+  print('Resource not found: ${e.message}');
+} on NetworkException catch (e) {
+  // Handle network/connection errors
+  print('Network error: ${e.message}');
+  // Maybe show offline message to user
+} on AirtableException catch (e) {
+  // Catch-all for any other Airtable errors
+  print('Airtable error: ${e.message}');
+  print('Status code: ${e.statusCode}');
+}
+```
+
+### Legacy Approach (Still Works)
 
 ```dart
 try {
@@ -226,30 +279,32 @@ try {
 }
 ```
 
-**Explanation**:
+**Benefits of Specific Exception Types:**
+- Better error recovery strategies
+- More informative user messages
+- Easier debugging
+- Conditional retry logic based on error type
 
-- **Purpose**: To catch and handle errors that may occur during Airtable operations.
-- **Usage**: Wrap your Airtable CRUD operations in a `try-catch` block to handle exceptions.
-- **Example**:
+---
 
-  ```dart
-  try {
-    final newRecord = {'firstname': 'John'};
-    final createdRecord = await airtableCrud.createRecord('Contacts', newRecord);
-  } on AirtableException catch (e) {
-    print('Failed to create record: ${e.message}');
-    print('Error details: ${e.details}');
-  }
-  ```
+## ⚠️ Deprecation Notices
 
-- **Note**: The `AirtableException` provides a `message` and `details` to help you understand what went wrong.
+Some features are deprecated in v1.3.0 and will be removed in v2.0.0:
 
+| Deprecated | Use Instead | Removed In |
+|------------|-------------|------------|
+| `import 'package:airtable_crud/airtable_plugin.dart'` | `import 'package:airtable_crud/airtable_crud.dart'` | 2.0.0 |
+| `fetchRecordsWithFilter(table, formula)` | `fetchRecords(table, filter: formula)` | 2.0.0 |
+| `record.fields['key'] = value` | `record.copyWith(fields: {...})` or `record.updateField('key', value)` | 2.0.0 |
+| `AirtableCrud(apiKey, baseId)` | `AirtableCrud.withConfig(config)` for advanced features | Basic constructor remains, but limited |
+
+**All deprecated features still work in v1.3.0** - they just show warnings. You have 6-12 months to migrate before v2.0.0.
+
+See [MIGRATION.md](MIGRATION.md) for detailed upgrade instructions.
+
+---
 
 ## About the Author
-
-<p align="left">
-  <img src="https://i.imgur.com/HKJPtDU.jpg" alt="Profile Photo" style="object-fit:cover;border-radius:50%">
-</p>
 
 **Kato Emmanuel**
 

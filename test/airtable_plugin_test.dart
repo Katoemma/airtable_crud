@@ -3,8 +3,8 @@ import 'package:test/test.dart';
 
 void main() {
   const apiKey =
-      'patRXr2irq0ggr5rj.92a977c7f035f867a09e1d73fbfa5a66a7da864632571a7da43c46d2a6e12464';
-  const baseId = 'app4eSThceLDNKHWT';
+      'YOUR_AIRTABLE_API_KEY'; // Replace with your actual API key to run tests
+  const baseId = 'YOUR_BASE_ID'; // Replace with your actual Base ID
   const tableName = 'crudTest';
 
   late AirtableCrud airtableCrud;
