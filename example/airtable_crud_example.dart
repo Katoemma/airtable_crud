@@ -1,6 +1,17 @@
-import 'package:airtable_crud/airtable_plugin.dart';
+// ignore_for_file: avoid_print
+
+import 'package:airtable_crud/airtable_crud.dart';
 import 'package:flutter/material.dart';
 
+/// Airtable CRUD v1.3.0 Flutter Example
+///
+/// This example demonstrates all the new features in v1.3.0:
+/// - AirtableConfig for advanced configuration
+/// - Unified fetchRecords() method
+/// - Immutable record updates
+/// - Enhanced error handling with specific exception types
+/// - DeleteResult with metadata
+/// - Type-safe field access
 void main() {
   runApp(AirtableExampleApp());
 }
@@ -37,7 +48,16 @@ class _AirtableHomePageState extends State<AirtableHomePage> {
   @override
   void initState() {
     super.initState();
-    airtableCrud = AirtableCrud(apiKey, baseId);
+
+    // ✅ v1.3.0: Initialize with configuration
+    final config = AirtableConfig(
+      apiKey: apiKey,
+      baseId: baseId,
+      timeout: Duration(seconds: 60),
+      maxRetries: 3,
+      enableLogging: true,
+    );
+    airtableCrud = AirtableCrud.withConfig(config);
     fetchRecords();
   }
 
@@ -47,17 +67,31 @@ class _AirtableHomePageState extends State<AirtableHomePage> {
     });
 
     try {
-      List<AirtableRecord> fetchedRecords =
-          await airtableCrud.fetchRecords(tableName);
+      // ✅ v1.3.0: Unified fetchRecords with optional filters
+      List<AirtableRecord> fetchedRecords = await airtableCrud.fetchRecords(
+        tableName,
+        fields: ['firstname', 'lastname', 'email'],
+        maxRecords: 100,
+      );
       setState(() {
         records = fetchedRecords;
         isLoading = false;
       });
-    } catch (e) {
-      print('Error fetching records: $e');
-      setState(() {
-        isLoading = false;
-      });
+    } on AuthException catch (e) {
+      print('Auth error: ${e.message}');
+      _showErrorDialog('Authentication Error', e.message);
+    } on NetworkException catch (e) {
+      print('Network error: ${e.message}');
+      _showErrorDialog('Network Error', 'Check your connection');
+    } on AirtableException catch (e) {
+      print('Error fetching records: ${e.message}');
+      _showErrorDialog('Error', e.message);
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 
@@ -100,24 +134,51 @@ class _AirtableHomePageState extends State<AirtableHomePage> {
   }
 
   Future<void> updateRecord(AirtableRecord record) async {
-    // Modify the record's fields
-    record.fields['lastname'] = 'Updated';
-
     try {
-      await airtableCrud.updateRecord(tableName, record);
+      // ✅ v1.3.0: Immutable update pattern
+      final updated = record.updateField('lastname', 'Updated');
+      final result = await airtableCrud.updateRecord(tableName, updated);
+      print('Updated record: ${result.id}');
       await fetchRecords();
-    } catch (e) {
-      print('Error updating record: $e');
+    } on ValidationException catch (e) {
+      print('Validation error: ${e.message}');
+      _showErrorDialog('Invalid Data', e.message);
+    } on AirtableException catch (e) {
+      print('Error updating record: ${e.message}');
+      _showErrorDialog('Update Error', e.message);
     }
   }
 
   Future<void> deleteRecord(String id) async {
     try {
-      await airtableCrud.deleteRecord(tableName, id);
+      // ✅ v1.3.0: Delete returns DeleteResult with metadata
+      final result = await airtableCrud.deleteRecord(tableName, id);
+      print('Deleted ${result.id} at ${result.deletedAt}');
       await fetchRecords();
-    } catch (e) {
-      print('Error deleting record: $e');
+    } on NotFoundException catch (e) {
+      print('Record not found: ${e.message}');
+      _showErrorDialog('Not Found', 'Record already deleted');
+    } on AirtableException catch (e) {
+      print('Error deleting record: ${e.message}');
+      _showErrorDialog('Delete Error', e.message);
     }
+  }
+
+  void _showErrorDialog(String title, String message) {
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget buildRecordList() {
@@ -177,7 +238,7 @@ class _AirtableHomePageState extends State<AirtableHomePage> {
                 ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).pop();
-                    bulkCreateRecords();
+                    createBulkRecords();
                   },
                   child: Text('Bulk Create Records'),
                 ),
