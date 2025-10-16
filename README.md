@@ -4,17 +4,29 @@
 
 The Airtable CRUD Flutter Package is a robust solution for integrating Airtable's API with your Flutter applications. It enables developers to perform essential CRUD operations and filter records seamlessly.
 
+## ✨ What's New in v1.3.0
+
+- 🎯 **Unified API**: Single `fetchRecords()` method for all fetch operations
+- 🛡️ **Better Error Handling**: Specific exception types (Auth, Network, RateLimit, etc.)
+- ⚙️ **Advanced Configuration**: Configurable timeouts, retries, and logging
+- 🔄 **Immutable Updates**: New `copyWith()` and `updateField()` methods
+- 📦 **New Bulk Operations**: Bulk update and delete support
+- 🏗️ **Improved Architecture**: Better organized, more testable code
+- 📝 **Enhanced Return Values**: Operations now return more useful information
+- ✅ **100% Backward Compatible**: All existing code still works!
+
+[See full changelog](CHANGELOG.md) | [Migration guide](MIGRATION.md)
+
 ## Features
 
-- **Fetch Records**: Retrieve all records from a specified table.
-- **Fetch Records with Filter**: Use Airtable's `filterByFormula` to retrieve specific records based on criteria.
-- **Create Records**: Easily add new records to your Airtable table.
-- **Bulk Create Records**: Create multiple records efficiently in batches.
-- **Update Records**: Modify existing records effortlessly.
-- **Delete Records**: Remove records from your Airtable table.
-- **Pagination Support**: Fetch records with pagination options.
-- **View Selection**: Option to select views when fetching records, with a default set to `Grid View`.
-- **Fetch Fields**:Option to select fields to be included in the response when fetching records. 
+- **Fetch Records**: Retrieve all records with optional filtering, field selection, and pagination
+- **Create Records**: Add single or multiple records efficiently in batches
+- **Update Records**: Modify existing records with immutable patterns or bulk operations
+- **Delete Records**: Remove single or multiple records with detailed results
+- **Advanced Error Handling**: Catch specific error types for better error recovery
+- **Retry Logic**: Automatic retry with exponential backoff
+- **Configuration**: Customize timeouts, retries, logging, and more
+- **Type Safety**: Immutable models and type-safe field access 
 
 ## Getting Started
 
@@ -31,16 +43,31 @@ Then run `flutter pub get` to install the package.
 
 ### Usage
 
-1. **Import the plugin**:
+1. **Import the package**:
 
    ```dart
-   import 'package:airtable_crud/airtable_plugin.dart';
+   // Recommended (v1.3.0+)
+   import 'package:airtable_crud/airtable_crud.dart';
+   
+   // ⚠️ Deprecated (still works but will be removed in v2.0.0)
+   // import 'package:airtable_crud/airtable_plugin.dart';
    ```
 
 2. **Initialize the Airtable CRUD**:
 
    ```dart
-   final airtableCrud = AirtableCrud('YOUR_AIRTABLE_API_KEY', 'YOUR_BASE_ID');
+   // Simple initialization
+   final airtableCrud = AirtableCrud('YOUR_API_KEY', 'YOUR_BASE_ID');
+   
+   // Advanced initialization (recommended in v1.3.0+)
+   final config = AirtableConfig(
+     apiKey: 'YOUR_API_KEY',
+     baseId: 'YOUR_BASE_ID',
+     timeout: Duration(seconds: 60),
+     maxRetries: 5,
+     enableLogging: true, // Helpful for debugging
+   );
+   final airtableCrud = AirtableCrud.withConfig(config);
    ```
 
 3. **Fetch Records**:
@@ -215,7 +242,41 @@ Then run `flutter pub get` to install the package.
 
 ## Error Handling
 
-The plugin throws `AirtableException` for error cases, providing details about the error message. Handle exceptions gracefully in your application.
+### v1.3.0+ Recommended Approach
+
+The package provides specific exception types for different error scenarios, allowing for more granular error handling:
+
+```dart
+try {
+  final records = await airtableCrud.fetchRecords('Users');
+} on AuthException catch (e) {
+  // Handle authentication/authorization errors (401/403)
+  print('Auth error: ${e.message}');
+  print('Check your API key or permissions');
+} on RateLimitException catch (e) {
+  // Handle rate limiting (429)
+  print('Rate limited. Retry after: ${e.retryAfter}');
+  await Future.delayed(e.retryAfter ?? Duration(seconds: 5));
+  // Retry the operation
+} on ValidationException catch (e) {
+  // Handle validation errors (422)
+  print('Invalid data: ${e.message}');
+  print('Details: ${e.details}');
+} on NotFoundException catch (e) {
+  // Handle not found errors (404)
+  print('Resource not found: ${e.message}');
+} on NetworkException catch (e) {
+  // Handle network/connection errors
+  print('Network error: ${e.message}');
+  // Maybe show offline message to user
+} on AirtableException catch (e) {
+  // Catch-all for any other Airtable errors
+  print('Airtable error: ${e.message}');
+  print('Status code: ${e.statusCode}');
+}
+```
+
+### Legacy Approach (Still Works)
 
 ```dart
 try {
@@ -226,24 +287,30 @@ try {
 }
 ```
 
-**Explanation**:
+**Benefits of Specific Exception Types:**
+- Better error recovery strategies
+- More informative user messages
+- Easier debugging
+- Conditional retry logic based on error type
 
-- **Purpose**: To catch and handle errors that may occur during Airtable operations.
-- **Usage**: Wrap your Airtable CRUD operations in a `try-catch` block to handle exceptions.
-- **Example**:
+---
 
-  ```dart
-  try {
-    final newRecord = {'firstname': 'John'};
-    final createdRecord = await airtableCrud.createRecord('Contacts', newRecord);
-  } on AirtableException catch (e) {
-    print('Failed to create record: ${e.message}');
-    print('Error details: ${e.details}');
-  }
-  ```
+## ⚠️ Deprecation Notices
 
-- **Note**: The `AirtableException` provides a `message` and `details` to help you understand what went wrong.
+Some features are deprecated in v1.3.0 and will be removed in v2.0.0:
 
+| Deprecated | Use Instead | Removed In |
+|------------|-------------|------------|
+| `import 'package:airtable_crud/airtable_plugin.dart'` | `import 'package:airtable_crud/airtable_crud.dart'` | 2.0.0 |
+| `fetchRecordsWithFilter(table, formula)` | `fetchRecords(table, filter: formula)` | 2.0.0 |
+| `record.fields['key'] = value` | `record.copyWith(fields: {...})` or `record.updateField('key', value)` | 2.0.0 |
+| `AirtableCrud(apiKey, baseId)` | `AirtableCrud.withConfig(config)` for advanced features | Basic constructor remains, but limited |
+
+**All deprecated features still work in v1.3.0** - they just show warnings. You have 6-12 months to migrate before v2.0.0.
+
+See [MIGRATION.md](MIGRATION.md) for detailed upgrade instructions.
+
+---
 
 ## About the Author
 
