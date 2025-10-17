@@ -33,7 +33,7 @@ abstract class AirtableException implements Exception {
   /// Includes the exception type, message, optional details, and status code.
   @override
   String toString() {
-    final buffer = StringBuffer('${runtimeType}: $message');
+    final buffer = StringBuffer('$runtimeType: $message');
     if (details != null) {
       buffer.write(' - $details');
     }

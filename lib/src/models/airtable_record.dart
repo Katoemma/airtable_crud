@@ -54,7 +54,7 @@ class AirtableRecord {
   }) {
     return AirtableRecord(
       id: id ?? this.id,
-      fields: fields ?? this._fields,
+      fields: fields ?? _fields,
     );
   }
 
